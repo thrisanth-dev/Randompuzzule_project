@@ -1,0 +1,49 @@
+
+import random
+import time
+import json
+import os
+from puzzles.riddles import RiddlePuzzle
+from puzzles.math_puzzle import MathPuzzle
+from puzzles.word_scramble import WordScramblePuzzle
+from puzzles.number_guess import NumberGuessPuzzle
+from utils.score_tracker import ScoreTracker
+from utils.display import Display
+
+
+def main():
+    display = Display()
+    score_tracker = ScoreTracker()
+
+    display.banner()
+    player_name = display.get_player_name()
+
+    display.print_rules()
+    input("\nPress Enter to start the game...")
+
+    puzzle_classes = [RiddlePuzzle, MathPuzzle, WordScramblePuzzle, NumberGuessPuzzle]
+    total_score = 0
+    rounds = 5
+
+    for round_num in range(1, rounds + 1):
+        display.round_header(round_num, rounds, total_score)
+        puzzle_class = random.choice(puzzle_classes)
+        puzzle = puzzle_class()
+
+        start_time = time.time()
+        result = puzzle.play()
+        elapsed = round(time.time() - start_time, 2)
+
+        round_score = score_tracker.calculate_round_score(result["correct"], result["hints_used"], elapsed)
+        total_score += round_score
+
+        display.round_result(result, round_score, elapsed)
+        time.sleep(1.5)
+
+    display.game_over(player_name, total_score, rounds)
+    score_tracker.save_score(player_name, total_score)
+    display.show_leaderboard(score_tracker.get_leaderboard())
+
+
+if __name__ == "__main__":
+    main()
