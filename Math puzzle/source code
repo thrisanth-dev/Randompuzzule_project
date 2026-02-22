@@ -1,0 +1,85 @@
+"""Math-based puzzle module with randomized arithmetic challenges."""
+import random
+from puzzles.base_puzzle import BasePuzzle
+
+
+class MathPuzzle(BasePuzzle):
+    def __init__(self):
+        super().__init__("🔢 Math Puzzle")
+        self.puzzle_data = self._generate_puzzle()
+
+    def _generate_puzzle(self) -> dict:
+        level = random.choice(["easy", "medium", "hard"])
+
+        if level == "easy":
+            a, b = random.randint(1, 20), random.randint(1, 20)
+            op = random.choice(["+", "-"])
+        elif level == "medium":
+            a, b = random.randint(10, 50), random.randint(2, 10)
+            op = random.choice(["*", "+", "-"])
+        else:
+            a, b = random.randint(10, 30), random.randint(2, 12)
+            op = random.choice(["*", "**"])
+
+        if op == "+":
+            answer = a + b
+            question = f"What is {a} + {b}?"
+        elif op == "-":
+            a = max(a, b)
+            answer = a - b
+            question = f"What is {a} - {b}?"
+        elif op == "*":
+            answer = a * b
+            question = f"What is {a} × {b}?"
+        elif op == "**":
+            b = random.randint(2, 3)
+            answer = a ** b
+            question = f"What is {a} to the power of {b}?"
+
+        hints = [
+            f"The answer is a {'positive' if answer > 0 else 'negative'} number.",
+            f"The answer is {'even' if answer % 2 == 0 else 'odd'}.",
+            f"The answer is between {answer - 10} and {answer + 10}.",
+        ]
+
+        return {"question": question, "answer": answer, "level": level, "hints": hints}
+
+    def play(self) -> dict:
+        print(f"\n{'='*50}")
+        print(f"  {self.name}  [Difficulty: {self.puzzle_data['level'].upper()}]")
+        print(f"{'='*50}")
+        print(f"\n📐 Problem:\n  {self.puzzle_data['question']}\n")
+
+        attempts = 0
+        correct = False
+
+        while attempts < self.max_attempts:
+            attempts_left = self.max_attempts - attempts
+            print(f"Attempts remaining: {attempts_left}")
+
+            if attempts > 0:
+                self.prompt_hint(self.puzzle_data["hints"])
+
+            raw = input("Your answer: ").strip()
+            value, error = self.validate_input(raw, int)
+
+            if error:
+                print(f"⚠️  {error} (enter a whole number)")
+                continue
+
+            if value == self.puzzle_data["answer"]:
+                print(f"\n✅ Correct! The answer is {self.puzzle_data['answer']}.")
+                correct = True
+                break
+            else:
+                diff = abs(value - self.puzzle_data["answer"])
+                if diff <= 5:
+                    print(f"❌ So close! You're only {diff} away.")
+                else:
+                    print("❌ Wrong answer. Try again!")
+                attempts += 1
+
+        if not correct:
+            print(f"\n💔 Out of attempts! The answer was: {self.puzzle_data['answer']}")
+
+        return {"correct": correct, "hints_used": self.hints_used, "puzzle_type": self.name}
