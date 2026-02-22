@@ -1,0 +1,63 @@
+"""Number guessing puzzle with adaptive hints."""
+import random
+from puzzles.base_puzzle import BasePuzzle
+
+
+class NumberGuessPuzzle(BasePuzzle):
+    def __init__(self):
+        super().__init__("🎯 Number Guess")
+        self.low = 1
+        self.high = 100
+        self.secret = random.randint(self.low, self.high)
+        self.max_attempts = 6
+
+    def play(self) -> dict:
+        print(f"\n{'='*50}")
+        print(f"  {self.name}")
+        print(f"{'='*50}")
+        print(f"\n🎲 I'm thinking of a number between {self.low} and {self.high}.")
+        print(f"   You have {self.max_attempts} attempts. Use them wisely!\n")
+
+        attempts = 0
+        correct = False
+        current_low, current_high = self.low, self.high
+
+        while attempts < self.max_attempts:
+            attempts_left = self.max_attempts - attempts
+            print(f"Attempts remaining: {attempts_left}  |  Range: [{current_low} – {current_high}]")
+
+            raw = input("Your guess: ").strip()
+            value, error = self.validate_input(raw, int)
+
+            if error:
+                print(f"⚠️  {error}")
+                continue
+
+            if value < self.low or value > self.high:
+                print(f"⚠️  Please guess between {self.low} and {self.high}.")
+                continue
+
+            attempts += 1
+
+            if value == self.secret:
+                print(f"\n✅ Correct! The number was {self.secret}! You got it in {attempts} attempt(s).")
+                correct = True
+                break
+            elif value < self.secret:
+                current_low = max(current_low, value + 1)
+                print(f"📈 Too low! Go higher.")
+            else:
+                current_high = min(current_high, value - 1)
+                print(f"📉 Too high! Go lower.")
+
+            # Closing-in encouragement
+            diff = abs(value - self.secret)
+            if diff <= 5:
+                print("🔥 Very close!")
+            elif diff <= 15:
+                print("🌡️  Getting warmer...")
+
+        if not correct:
+            print(f"\n💔 Out of attempts! The number was: {self.secret}")
+
+        return {"correct": correct, "hints_used": self.hints_used, "puzzle_type": self.name}
