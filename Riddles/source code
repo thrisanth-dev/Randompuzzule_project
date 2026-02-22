@@ -1,0 +1,89 @@
+"""Riddle-based puzzle module."""
+import random
+from puzzles.base_puzzle import BasePuzzle
+
+
+RIDDLES = [
+    {
+        "question": "I speak without a mouth and hear without ears. I have no body, but I come alive with the wind. What am I?",
+        "answer": "echo",
+        "hints": ["I am a sound phenomenon.", "I repeat what you say.", "You can hear me in mountains or canyons."]
+    },
+    {
+        "question": "The more you take, the more you leave behind. What am I?",
+        "answer": "footsteps",
+        "hints": ["Think about walking.", "You create me as you move.", "I am impressions left on the ground."]
+    },
+    {
+        "question": "I have cities, but no houses live there. I have mountains, but no trees grow there. I have water, but no fish swim there. What am I?",
+        "answer": "map",
+        "hints": ["I am flat.", "You use me for navigation.", "I am a representation of places."]
+    },
+    {
+        "question": "What has hands but cannot clap?",
+        "answer": "clock",
+        "hints": ["You find it on a wall or your wrist.", "It tells you something every day.", "It keeps track of hours and minutes."]
+    },
+    {
+        "question": "What gets wetter the more it dries?",
+        "answer": "towel",
+        "hints": ["You use it after a bath.", "It absorbs moisture.", "You hang it in the bathroom."]
+    },
+    {
+        "question": "I have a head, a tail, but no body. What am I?",
+        "answer": "coin",
+        "hints": ["I am made of metal.", "You use me as currency.", "You flip me to make decisions."]
+    },
+    {
+        "question": "What can travel around the world while staying in a corner?",
+        "answer": "stamp",
+        "hints": ["I am small.", "I go on envelopes.", "I am used in postal mail."]
+    },
+    {
+        "question": "What has keys but no locks, space but no room, and you can enter but can't go inside?",
+        "answer": "keyboard",
+        "hints": ["You use it with a computer.", "It has letters and numbers.", "You type on it."]
+    },
+]
+
+
+class RiddlePuzzle(BasePuzzle):
+    def __init__(self):
+        super().__init__("🧩 Riddle Puzzle")
+        self.riddle = random.choice(RIDDLES)
+
+    def play(self) -> dict:
+        print(f"\n{'='*50}")
+        print(f"  {self.name}")
+        print(f"{'='*50}")
+        print(f"\n📜 Riddle:\n  {self.riddle['question']}\n")
+
+        attempts = 0
+        correct = False
+
+        while attempts < self.max_attempts:
+            attempts_left = self.max_attempts - attempts
+            print(f"Attempts remaining: {attempts_left}")
+
+            if attempts > 0 and attempts < self.max_attempts:
+                self.prompt_hint(self.riddle["hints"])
+
+            user_input = input("Your answer: ").strip().lower()
+            value, error = self.validate_input(user_input)
+
+            if error:
+                print(f"⚠️  {error}")
+                continue
+
+            if value == self.riddle["answer"].lower():
+                print(f"\n✅ Correct! The answer is '{self.riddle['answer']}'.")
+                correct = True
+                break
+            else:
+                print("❌ Wrong answer. Try again!")
+                attempts += 1
+
+        if not correct:
+            print(f"\n💔 Out of attempts! The answer was: '{self.riddle['answer']}'")
+
+        return {"correct": correct, "hints_used": self.hints_used, "puzzle_type": self.name}
