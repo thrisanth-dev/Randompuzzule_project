@@ -1,0 +1,74 @@
+"""Word scramble puzzle module."""
+import random
+from puzzles.base_puzzle import BasePuzzle
+
+
+WORD_LIST = [
+    {"word": "python", "hint1": "A popular programming language", "hint2": "Also a type of snake", "hint3": "Starts with P"},
+    {"word": "algorithm", "hint1": "A step-by-step problem-solving procedure", "hint2": "Used in computer science", "hint3": "Ends with 'rithm'"},
+    {"word": "database", "hint1": "Used to store organized data", "hint2": "MySQL and PostgreSQL are examples", "hint3": "8 letters"},
+    {"word": "function", "hint1": "A reusable block of code", "hint2": "Defined with 'def' in Python", "hint3": "Takes input and returns output"},
+    {"word": "variable", "hint1": "Stores a value in programming", "hint2": "Can change during runtime", "hint3": "8 letters"},
+    {"word": "iteration", "hint1": "Repeating a process", "hint2": "Loops do this", "hint3": "Related to 'for' and 'while'"},
+    {"word": "boolean", "hint1": "True or False value", "hint2": "Named after George Boole", "hint3": "7 letters"},
+    {"word": "recursion", "hint1": "A function calling itself", "hint2": "Needs a base case", "hint3": "Used in tree traversal"},
+    {"word": "exception", "hint1": "An error caught by try/except", "hint2": "Raised when something goes wrong", "hint3": "9 letters"},
+    {"word": "inheritance", "hint1": "OOP concept", "hint2": "A child class gets parent features", "hint3": "Used with 'extends' or ':'"},
+]
+
+
+def scramble_word(word: str) -> str:
+    chars = list(word)
+    while True:
+        random.shuffle(chars)
+        scrambled = "".join(chars)
+        if scrambled != word:
+            return scrambled
+
+
+class WordScramblePuzzle(BasePuzzle):
+    def __init__(self):
+        super().__init__("🔤 Word Scramble")
+        entry = random.choice(WORD_LIST)
+        self.word = entry["word"]
+        self.scrambled = scramble_word(self.word)
+        self.hints = [entry["hint1"], entry["hint2"], entry["hint3"]]
+
+    def play(self) -> dict:
+        print(f"\n{'='*50}")
+        print(f"  {self.name}")
+        print(f"{'='*50}")
+        print(f"\n🔀 Unscramble this word:\n  ➤  {self.scrambled.upper()}\n")
+
+        attempts = 0
+        correct = False
+
+        while attempts < self.max_attempts:
+            attempts_left = self.max_attempts - attempts
+            print(f"Attempts remaining: {attempts_left}")
+
+            if attempts > 0:
+                self.prompt_hint(self.hints)
+
+            raw = input("Your answer: ").strip().lower()
+            value, error = self.validate_input(raw)
+
+            if error:
+                print(f"⚠️  {error}")
+                continue
+
+            if value == self.word:
+                print(f"\n✅ Correct! The word is '{self.word}'.")
+                correct = True
+                break
+            elif sorted(value) == sorted(self.word):
+                print("❌ The letters match, but that's not the right word!")
+                attempts += 1
+            else:
+                print("❌ Wrong. Try again!")
+                attempts += 1
+
+        if not correct:
+            print(f"\n💔 Out of attempts! The word was: '{self.word}'")
+
+        return {"correct": correct, "hints_used": self.hints_used, "puzzle_type": self.name}
