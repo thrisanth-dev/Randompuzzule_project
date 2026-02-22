@@ -1,0 +1,37 @@
+"""Base class for all puzzle types."""
+
+
+class BasePuzzle:
+    def __init__(self, name: str, max_attempts: int = 3):
+        self.name = name
+        self.max_attempts = max_attempts
+        self.hints_used = 0
+
+    def play(self) -> dict:
+        """Run the puzzle and return result dict."""
+        raise NotImplementedError
+
+    def validate_input(self, user_input: str, expected_type: type = str):
+        """Validate and convert user input to the expected type."""
+        user_input = user_input.strip()
+        if not user_input:
+            return None, "Input cannot be empty."
+        try:
+            return expected_type(user_input), None
+        except (ValueError, TypeError):
+            return None, f"Please enter a valid {expected_type.__name__}."
+
+    def get_hint(self, hints: list) -> str:
+        if self.hints_used < len(hints):
+            hint = hints[self.hints_used]
+            self.hints_used += 1
+            return f"💡 Hint {self.hints_used}: {hint}"
+        return "❌ No more hints available!"
+
+    def prompt_hint(self, hints: list) -> bool:
+        """Ask if user wants a hint. Returns True if hint was given."""
+        choice = input("\nWould you like a hint? (-10 pts) [y/n]: ").strip().lower()
+        if choice == 'y':
+            print(self.get_hint(hints))
+            return True
+        return False
